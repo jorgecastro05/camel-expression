@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xmlns:ctx="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <ctx:annotation-config/>
+    <ctx:component-scan base-package="com.fuse"/>
+
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+
+        <route id="routeExpressions">
+            <from uri="timer://exercise?delay=2000&amp;period=10s"/>
+            <log message=">> This is a Camel exercise covering expression languages"/>
+            <setBody>
+                <description>This creates a map</description>
+                <ognl>#{"value1":10,"value2":20}</ognl>
+            </setBody>
+            <!--add dinamically a value without change the body we can use this for setting values to pojos-->
+            <to uri="language:ognl:request.body.put('value3',10)?transform=false"/>
+            <log message=">> The map created with ognl: ${body}"/>
+            <setHeader headerName="addition">
+                <groovy>request.body.values().sum()</groovy>
+            </setHeader>
+            <log message=">> The sum of the objects using groovy: ${header.addition}"/>
+        </route>
+
+    </camelContext>
+
+</beans>
